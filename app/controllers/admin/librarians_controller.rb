@@ -4,76 +4,103 @@ class Admin::LibrariansController < ApplicationController
   before_action :ensure_librarian_role_id, only: [:create]
 
   def create
-     librarian = User.new(librarian_params)
+    librarian = User.new(librarian_params)
     if librarian.save
       render json: {
-        status: 200,
-        message: "Librarian created successfully",
-        data: UserSerializer.new(librarian).serializable_hash[:data][:attributes]
-      }, status: :ok
+               message: "Librarian created successfully",
+               data: UserSerializer.new(librarian).serializable_hash[:data][:attributes]
+             }, status: :ok
     else
       render json: {
-        status: 422,
-        message: "Failed to create librarian",
-
-        errors: librarian.errors.full_messages
-      }, status: :unprocessable_entity
+               message: "Failed to create librarian",
+               error: librarian.errors.full_messages
+             }, status: :unprocessable_entity
     end
   end
 
-  def destroy
+  def updatestatus()
+    puts "id"
+    puts params[:id]
     librarian = User.find(params[:id])
-
-    if librarian.destroy!
+    puts "librarian"
+    puts librarian
+    status = librarian.status
+    if status == 'inactive'
+      librarian.update!(status: 'active');
+    else
+      librarian.update!(status: 'inactive');
+    end
+    if librarian.status != status
       render json:
-      {
-        status: 200,
-        message: "Librarian deleted successfully",
-       }, status: :ok
-      else
-        render json:{
-        status: 422,
-        message: "Failed to delete librarian",
-        params: params
-      }
-      end
+               {
+                 message: "Success",
+               }, status: :ok
+    else
+      render json:{
+               message: "Failed",
+             }, status: 422
+    end
   end
 
   def index
     librarians = User.where(role_id: (Role.find_by(name:"librarian").id))
     if librarians.present?
-  render json:{
-      status: 200,
-      data: librarians.map { |librarian| UserSerializer.new(librarian).serializable_hash[:data][:attributes] }
-  },  status: :ok
+      render json:{
+               data: librarians.map { |librarian| UserSerializer.new(librarian).serializable_hash[:data][:attributes] }
+             },  status: :ok
     else
       render json:{
-        status: 422,
-        message: "Go to hell i din't have any librarian for you.",
-      }
+               message: "No data Found",
+             },status: 422
     end
   end
+
+
+  def promotetoadmin()
+    puts "id"
+    puts params[:id]
+    librarian = User.find(params[:id])
+    puts "librarian"
+    puts librarian
+    status = librarian.status
+    if status == 'active'
+      librarian.update!(role_id: 1);
+      if librarian.role_id == 1
+        render json:
+                 {
+                   message: "Success",
+                 }, status: :ok
+      else
+        render json:{
+                 message: "Failed",
+               }, status: :failed
+      end
+    else
+      render json:{
+               message: "Librarian is not active, first activate the librarian and then try again",
+             }, status: :failed
+    end
+  end
+
   private
   def librarian_params
     params.require(:user).permit(:email, :password, :name, :role_id)
   end
 
   def ensure_librarian_role_id
-  if (Role.find_by(name:"librarian")).id != params[:librarian][:user][:role_id].to_i
-    render json: {
-        status: 422,
-        message: "Failed to create librarian role missmatch",
-        params:params,
-        }, status: :unprocessable_entity
+    if (Role.find_by(name:"librarian")).id != params[:librarian][:user][:role_id].to_i
+      render json: {
+               message: "Failed to create librarian role missmatch",
+               params:params,
+             }, status: :unprocessable_entity
     end
   end
-  end
-  def ensure_admin!
+end
+def ensure_admin!
   if current_user.role_id != (Role.find_by(name:"admin")).id
     render json: {
-        status: 403,
-        message: "Access denied. Admin privileges required.",
-        params:params
-      }, status: :forbidden
+             message: "Access denied. Admin privileges required.",
+             params:params
+           }, status: :unauthorized
   end
 end

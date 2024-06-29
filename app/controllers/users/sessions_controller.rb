@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 class Users::SessionsController < Devise::SessionsController
   include RackSessionsFix
   before_action :authenticate_user!, only: [:destroy]
@@ -7,7 +6,17 @@ class Users::SessionsController < Devise::SessionsController
 
   # POST /resource/sign_in
    def create
-     super
+      puts "params start:"
+      puts params[:user][:email]
+      user = User.find_by(email: params[:user][:email])
+      if user.status == 'active'
+        super
+      else
+        render json: {
+        status: 401,
+        message: "User is not active"
+      }, status: :unauthorized
+      end
    end
 
   # DELETE /resource/sign_out
@@ -25,7 +34,6 @@ class Users::SessionsController < Devise::SessionsController
 
   private
   def respond_with(current_user, _opts = {})
-
     render json: {
       status: {
         code: 200, message: 'Logged in successfully.',

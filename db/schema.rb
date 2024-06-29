@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_21_170610) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_28_141407) do
   create_table "books", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", precision: 3
     t.datetime "updated_at", precision: 3
@@ -32,7 +32,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_21_170610) do
     t.datetime "deleted_at", precision: 3
     t.bigint "book_id", unsigned: true
     t.bigint "user_id", unsigned: true
-    t.date "date_of_issue"
+    t.text "date_of_issue", size: :long
     t.text "date_of_return", size: :long
     t.index ["deleted_at"], name: "idx_borrowing_records_deleted_at"
   end
@@ -54,6 +54,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_21_170610) do
     t.string "name"
     t.string "jti", null: false
     t.bigint "role_id"
+    t.string "status", default: "active"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
