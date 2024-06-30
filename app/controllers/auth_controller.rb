@@ -1,6 +1,8 @@
 class AuthController < ApplicationController
 
   def is_verified_token()
+    puts "Params :: "
+    puts params
     token = request.headers['Authorization'].split(' ').last
     puts "token in rails :"
     puts token

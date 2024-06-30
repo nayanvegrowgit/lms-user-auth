@@ -12,9 +12,10 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :librarians, only: [:index, :create, :destroy]
     resources :members, only: [:index, :create, :destroy]
-    patch '/admin/librarians/updatestatus/:id', to: 'librarians#updatestatus'
-    patch '/admin/members/updatestatus/:id', to: 'users#updatestatus'
-    patch '/admin/librarians/promotetoadmin/:id', to: 'librarians#promotetoadmin'
+    post '/members/list', to: 'members#list'
+    patch '/librarians/updatestatus/:id', to: 'librarians#updatestatus'
+    patch '/members/updatestatus/:id', to: 'users#updatestatus'
+    patch '/librarians/promotetoadmin/:id', to: 'librarians#promotetoadmin'
   end
   post '/auth_controller', to: 'auth#is_verified_token'
 end

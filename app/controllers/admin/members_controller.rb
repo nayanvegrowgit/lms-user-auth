@@ -18,8 +18,8 @@ class Admin::MembersController < ApplicationController
     end
   end
 
-  def index
-    members = User.where(role_id: (Role.find_by(name:"member").id))
+  def list()
+    members = User.where(role_id: (Role.find_by(name:"member").id)).offset(params[:offset]).limit(params[:limit])
     if members.present?
       render json:{
                data: members.map { |member| UserSerializer.new(member).serializable_hash[:data][:attributes] }
@@ -32,11 +32,9 @@ class Admin::MembersController < ApplicationController
   end
 
   def updatestatus()
-    puts "id"
-    puts params[:id]
+
     member = User.find(params[:id])
-    puts "member"
-    puts member
+
     status = member.status
     if status == 'inactive'
       member.update!(status: 'active');
@@ -59,9 +57,10 @@ class Admin::MembersController < ApplicationController
 
   private
   def member_params
-    puts params.require(:user).permit(:email, :password, :name, :role_id)
     params.require(:user).permit(:email, :password, :name, :role_id)
   end
+
+
 
   def ensure_member_role_id
     if (Role.find_by(name:"member")).id != params[:member][:user][:role_id].to_i
@@ -72,14 +71,7 @@ class Admin::MembersController < ApplicationController
     end
   end
 def ensure_authorised!
-  puts "current user role id"
-  puts current_user.role_id
-  puts "role id admin"
-  puts (Role.find_by(name:"admin")).id
-  puts "role id librarian"
-  puts (Role.find_by(name:"librarian")).id
-  puts
-  if current_user.role_id != (Role.find_by(name:"admin")).id && current_user.role_id != (Role.find_by(name:"librarian")).id
+   if current_user.role_id != (Role.find_by(name:"admin")).id && current_user.role_id != (Role.find_by(name:"librarian")).id
     render json: {
              status: 401,
              message: "Access denied.",
